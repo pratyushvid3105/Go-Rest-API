@@ -22,15 +22,8 @@ func (e Event) Save() error{
 	VALUES(?, ?, ?, ?, ?)
 	`
 
-	// To prepare we parse our query and as a result we'll get the prepared SQL statement or an error if something goes wrong.
-	statement, err1 := db.DB.Prepare(query)
-	if err1 != nil {
-		return err1
-	}
-	// One last thing we also should do with that statement is close it after we executed it and a good way of doing that, is with help of the defer keyword, which allows us to call close here without executing it here. Instead, it will be executed by go now whenever this safe function is done, no matter if it's done because we had an error anywhere or because it completed successfully, that's how we should close this statement.
-	defer statement.Close()
-	// We can use this prepared statement to execute it with this exec method which exists on this statement value. And to exec we now can parse as many arguments as we need, one for every placeholder we have here. So one for every question mark in the order in which those values should be assigned to those columns.
-	result, err2 := statement.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID)
+	// Using Prepare() is 100% optional! We could send all your commands directly via Exec() or Query().
+	result, err2 := db.DB.Exec(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID)
 	if err2 != nil {
 		return err2
 	}
@@ -67,3 +60,30 @@ func GetAllEvents() ([]Event, error) {
 	}
 	return events, nil
 }
+
+/* 
+Preparing Statements vs Directly Executing Queries (Prepare() vs Exec()/Query())
+In the previous lectures, we started sending SQL commands to the SQLite database.
+
+And we did this by following different approaches:
+
+DB.Exec() (when we created the tables)
+
+Prepare() + stmt.Exec() (when we inserted data into the database)
+
+DB.Query() (when we fetched data from the database)
+
+Using Prepare() is 100% optional! You could send all your commands directly via Exec() or Query().
+
+The difference between those two methods then just is whether you're fetching data from the database (=> use Query()) or your manipulating the database / data in the database (=> use Exec()).
+
+But what's the advantage of using Prepare()?
+
+Prepare() prepares a SQL statement - this can lead to better performance if the same statement is executed multiple times (potentially with different data for its placeholders).
+
+This is only true, if the prepared statement is not closed (stmt.Close()) in between those executions. In that case, there wouldn't be any advantages.
+
+And, indeed, in this application, we are calling stmt.Close() directly after calling stmt.Exec(). So here, it really wouldn't matter which approach you're using.
+
+But in order to show you the different ways of using the sql package, I decided to also include this preparation approach in this course.
+*/
