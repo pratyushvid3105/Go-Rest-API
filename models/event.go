@@ -11,16 +11,14 @@ type Event struct {
 	Name string `binding:"required"`
 	Description string `binding:"required"`
 	Location string `binding:"required"`
-	DateTime time.Time
-	UserID int `binding:"required"`
+	DateTime time.Time `binding:"required"`
+	UserID int64
 }
-
-var events = []Event{}
 
 func (e Event) Save() error{
 	// we want to use the actual data that we're getting from the request instead of hard coding something here and to inject that received data in a safe way into this query which is not vulnerable to SQL injection attacks, we should add a couple of question marks here. One for every column into which a value should be inserted. So five question marks in total here because that's a special syntax that is supported by these SQL Packages that gives us a SQL injection safe way of inserting values into this query
 	query := `
-	INSERT INTO events(name, description, location, dateTime, user_id)
+	INSERT INTO events(name, description, location, dateTime, userId)
 	VALUES(?, ?, ?, ?, ?)
 	`
 
@@ -42,6 +40,30 @@ func (e Event) Save() error{
 	return err3
 }
 
-func GetAllEvents() []Event {
-	return events
+func GetAllEvents() ([]Event, error) {
+	// Now I'm using Query instead of Exec here, which we could use as well, because Query is typically used if you have a query where you wanna get back a bunch of rows, which you then wanna use, which is exactly what's the case here. Whereas Exec is used whenever you have a query that changes data in the database inserts data, updates data and so on. 
+	// If you have a query that changes stuff, it's Exec. If you have a query that fetches data, it's Query.
+	query := "SELECT * FROM events"
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []Event
+
+	// Next returns a boolean, which is true as long as there are rows left and false thereafter. And therefore this will keep the loop running for as long as there are rows to read and it will proceed through all those rows step by step with every iteration
+	for rows.Next() {
+		var event Event
+		// the Scan method, which now reads the content of the row we're currently processing and Scan then works a little bit like the FMT Package Scan method where you pass a pointer to Scan so that it's populated with the data from the row, though you don't just pass one pointer, but a bunch of pointers, one for every column that can be found in the row, in the order in which the columns were defined.
+		// So here for this event, we wanna start by populating the ID. So, we pass that ID to Scan, however not the raw value event.ID, but instead a pointer to that. So a pointer to that ID field in that event Struct (event.ID). And we then do this for all those fields.
+		err := rows.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		events = append(events, event)
+	}
+	return events, nil
 }
