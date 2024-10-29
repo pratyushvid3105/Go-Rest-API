@@ -23,8 +23,6 @@ Thumbs.db
 
 # Go modules
 vendor/
-*.mod
-*.sum
 
 # Environment variables
 .env
