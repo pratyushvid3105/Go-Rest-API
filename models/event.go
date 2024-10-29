@@ -15,22 +15,20 @@ type Event struct {
 	UserID int64
 }
 
-func (e Event) Save() error{
-	// we want to use the actual data that we're getting from the request instead of hard coding something here and to inject that received data in a safe way into this query which is not vulnerable to SQL injection attacks, we should add a couple of question marks here. One for every column into which a value should be inserted. So five question marks in total here because that's a special syntax that is supported by these SQL Packages that gives us a SQL injection safe way of inserting values into this query
-	query := `
-	INSERT INTO events(name, description, location, dateTime, userId)
-	VALUES(?, ?, ?, ?, ?)
-	`
-
-	// Using Prepare() is 100% optional! We could send all your commands directly via Exec() or Query().
-	result, err2 := db.DB.Exec(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID)
-	if err2 != nil {
-		return err2
-	}
-	// We can use this result to call LastInsertId to get the id of the event that was inserted because remember that we actually configured events table such that the ID is set automatically and we can get this automatically generated ID with help of this LastInsertId function here. So as a result we get back the id or an error if this somehow fails or if no id was found and I want to use that id to set it on my event. So I'll set the event ID to id. 
-	id, err3 := result.LastInsertId()
-	e.ID = id
-	return err3
+//use this method if we need the returning ID
+func (e *Event) Save() error {
+    query := `
+    INSERT INTO events(name, description, location, datetime, userId) 
+    VALUES($1,$2,$3,$4,$5)
+    RETURNING id`
+ 
+    var id int64
+    err := db.DB.QueryRow(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID).Scan(&id)
+    if err != nil {
+        return err
+    }
+    e.ID = id
+    return err
 }
 
 func GetAllEvents() ([]Event, error) {
