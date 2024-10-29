@@ -1,0 +1,34 @@
+
+### 2. `.gitignore`
+
+The `.gitignore` file is used to specify files and directories that Git should ignore.
+
+```plaintext
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go workspace
+bin/
+pkg/
+
+# Logs
+*.log
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Go modules
+vendor/
+*.mod
+*.sum
+
+# Environment variables
+.env
+
+# IDE/editor config files
+.idea/
+.vscode/
