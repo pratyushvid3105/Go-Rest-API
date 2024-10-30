@@ -43,9 +43,10 @@ func GetEventById(id int64) (*Event, error) {
 	var event Event
 	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID) 
 	if err != nil {
-		// Now we actually can't use nil as a zero value for event because the zero value for event is essentially an empty Struct (Event{}). But here, in order to be able to use nil, I will instead simply return a pointer to event because the null value for a pointer is nil. So if there is no address available because we have no event in this case, and therefore I can then return nil or the error or in the success case a pointer to the event that was created, and that is what we'll do after this if check here, here I will return a pointer to the created event and nil as a value for the error
+		// Now we actually can't use nil as a zero value for event because the zero value for event is essentially an empty Struct (Event{}). But here, in order to be able to use nil, we will instead simply return a pointer to event because the null value for a pointer is nil. So if there is no address available because we have no event in this case, and therefore we can then return nil and the error.
 		return nil, err
 	}
+	// here we will return a pointer to the created event and nil as a value for the error.
 	return &event, nil
 }
 
