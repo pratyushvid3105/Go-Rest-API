@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pratyushvid3105/Go-Rest-API/db"
@@ -15,20 +16,37 @@ type Event struct {
 	UserID int64
 }
 
-//use this method if we need the returning ID
-func (e *Event) Save() error {
-    query := `
-    INSERT INTO events(name, description, location, datetime, userId) 
-    VALUES($1,$2,$3,$4,$5)
-    RETURNING id`
- 
-    var id int64
-    err := db.DB.QueryRow(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID).Scan(&id)
-    if err != nil {
-        return err
-    }
-    e.ID = id
-    return err
+func (e Event) Save() error{
+	// we want to use the actual data that we're getting from the request instead of hard coding something here and to inject that received data in a safe way into this query which is not vulnerable to SQL injection attacks, we should add a couple of question marks here. One for every column into which a value should be inserted. So five question marks in total here because that's a special syntax that is supported by these SQL Packages that gives us a SQL injection safe way of inserting values into this query
+	query := `
+	INSERT INTO events(name, description, location, dateTime, userId)
+	VALUES(?, ?, ?, ?, ?)
+	`
+
+	// Using Prepare() is 100% optional! We could send all your commands directly via Exec() or Query().
+	result, err1 := db.DB.Exec(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID)
+	if err1 != nil {
+		return err1
+	}
+	// We can use this result to call LastInsertId to get the id of the event that was inserted because remember that we actually configured events table such that the ID is set automatically and we can get this automatically generated ID with help of this LastInsertId function here. So as a result we get back the id or an error if this somehow fails or if no id was found and I want to use that id to set it on my event. So I'll set the event ID to id. 
+	id, err2 := result.LastInsertId()
+	fmt.Println("id:", id)
+	fmt.Println("err:", err2)
+	e.ID = id
+	return err2
+}
+
+func GetEventById(id int64) (*Event, error) {
+	query := "SELECT * FROM events WHERE id = ?"
+	// Use QueryRow method cause we know result will consist of only 1 row
+	row := db.DB.QueryRow(query, id)
+	var event Event
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID) 
+	if err != nil {
+		// Now we actually can't use nil as a zero value for event because the zero value for event is essentially an empty Struct (Event{}). But here, in order to be able to use nil, I will instead simply return a pointer to event because the null value for a pointer is nil. So if there is no address available because we have no event in this case, and therefore I can then return nil or the error or in the success case a pointer to the event that was created, and that is what we'll do after this if check here, here I will return a pointer to the created event and nil as a value for the error
+		return nil, err
+	}
+	return &event, nil
 }
 
 func GetAllEvents() ([]Event, error) {

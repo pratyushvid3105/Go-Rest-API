@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pratyushvid3105/Go-Rest-API/db"
@@ -12,11 +13,27 @@ func main(){
 	db.InitDB()
 	server := gin.Default()
 
+	server.GET("/events/:id", getEvent)
+
 	server.GET("/events", getEvents) // GET, POST, PUT, PATCH, DELETE
 
 	server.POST("/events", createEvent)
 
 	server.Run(":8083") // localhost:8080
+}
+
+func getEvent(context *gin.Context){
+	eventId, err1 := strconv.ParseInt(context.Param("id"), 10, 64)
+	if err1 != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id. Try again later.", "error": err1})
+		return
+	}
+	event, err2 := models.GetEventById(eventId)
+	if err2 != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err2})
+		return
+	}
+	context.JSON(http.StatusOK, event)
 }
 
 func getEvents(context *gin.Context){
@@ -47,5 +64,5 @@ func createEvent(context *gin.Context){
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": "event created", "event": event})
+	context.JSON(http.StatusCreated, gin.H{"message": "event created"})
 }
