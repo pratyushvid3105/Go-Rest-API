@@ -78,9 +78,22 @@ func GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
+func UpdateEventById(id int64) (*Event, error) {
+	query := "SELECT * FROM events WHERE id = ?"
+	// Use QueryRow method cause we know result will consist of only 1 row
+	row := db.DB.QueryRow(query, id)
+	var event Event
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID) 
+	if err != nil {
+		return nil, err
+	}
+	// here we will return a pointer to the created event and nil as a value for the error.
+	return &event, nil
+}
+
 /* 
 Preparing Statements vs Directly Executing Queries (Prepare() vs Exec()/Query())
-In the previous lectures, we started sending SQL commands to the SQLite database.
+We started sending SQL commands to the SQLite database.
 
 And we did this by following different approaches:
 
