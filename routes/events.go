@@ -72,4 +72,13 @@ func updateEvent(context *gin.Context){
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data", "error": err})
 		return
 	}
+	updatedEvent.ID = eventId
+
+	err = updatedEvent.Update()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": "event updated successfully"})
 }

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/pratyushvid3105/Go-Rest-API/db"
@@ -30,8 +29,6 @@ func (e Event) Save() error{
 	}
 	// We can use this result to call LastInsertId to get the id of the event that was inserted because remember that we actually configured events table such that the ID is set automatically and we can get this automatically generated ID with help of this LastInsertId function here. So as a result we get back the id or an error if this somehow fails or if no id was found and I want to use that id to set it on my event. So I'll set the event ID to id. 
 	id, err2 := result.LastInsertId()
-	fmt.Println("id:", id)
-	fmt.Println("err:", err2)
 	e.ID = id
 	return err2
 }
@@ -78,17 +75,22 @@ func GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
-func UpdateEventById(id int64) (*Event, error) {
-	query := "SELECT * FROM events WHERE id = ?"
-	// Use QueryRow method cause we know result will consist of only 1 row
-	row := db.DB.QueryRow(query, id)
-	var event Event
-	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID) 
+func (event Event) Update() error {
+	query := `
+	UPDATE events 
+	SET name = ?, description = ?, location = ?, dateTime = ?
+	WHERE id = ?
+	`
+
+	statement, err := db.DB.Prepare(query)
+
 	if err != nil {
-		return nil, err
+		return err
 	}
-	// here we will return a pointer to the created event and nil as a value for the error.
-	return &event, nil
+	defer statement.Close()
+
+	_, err = statement.Exec(event.Name, event.Description, event.Location, event.DateTime, event.ID)
+	return err
 }
 
 /* 
