@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,4 +21,37 @@ func GenerateToken(email string, userId int64) (string, error) {
 	})
 	// NewWithClaims function will return a pointer to the token it produced. And then on that token, we can call the SignedString method because that token type we get back here is actually a more complex value. And we want to get a single string which we can send back to the client and which can then be attached to future requests by the client.
 	return token.SignedString([]byte(secretKey))
+}
+
+func VerifyToken(token string) error {
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		_, ok := t.Method.(*jwt.SigningMethodHMAC)
+
+		if !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return errors.New("could not parse token.")
+	}
+
+	tokenIsValid := parsedToken.Valid
+	
+	if !tokenIsValid {
+		return errors.New("invalid token!")
+	}
+
+	// Now if we got a valid token, we can use our parsed token and access the Claims field to get hold of the data that was stored in that token. So the email and userId field. We wanna check whether the claims we got for this token is of the jwt.MapClaims type, which it should be if it's our token because we used that MapClaims type for including our data into the token. As a result, we'll get back the claims.
+	// claims, ok := parsedToken.Claims.(jwt.MapClaims)
+
+	// if !ok {
+	// 	return errors.New("invalid token claims.")
+	// }
+
+	// email := claims["email"].(string)
+	// userId := claims["userId"].(int64)
+	return nil
 }

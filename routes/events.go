@@ -32,6 +32,13 @@ func getEvents(context *gin.Context){
 }
 
 func createEvent(context *gin.Context){
+	token := context.Request.Header.Get(("Authorization"))
+
+	if token != "" {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Not authorized."})
+		return
+	}
+
 	var event models.Event
 	err := context.ShouldBindJSON(&event)
 
