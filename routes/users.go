@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pratyushvid3105/Go-Rest-API/models"
+	"github.com/pratyushvid3105/Go-Rest-API/utils"
 )
 
 func signup(context *gin.Context){
@@ -41,8 +42,16 @@ func login(context *gin.Context){
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not authenticate user", "error": err.Error()})
 		return
 	}
+	
+	var token string
+	token, err = utils.GenerateToken(user.Email, user.ID)
 
-	context.JSON(http.StatusOK, gin.H{"message": "Login successfull!"})
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch user token", "error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"message": "Login successfull!", "token": token})
 }
 
 func getUsers(context *gin.Context){
