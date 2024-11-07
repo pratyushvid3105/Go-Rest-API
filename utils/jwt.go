@@ -30,18 +30,18 @@ func VerifyToken(token string) error {
 		if !ok {
 			return nil, errors.New("unexpected signing method")
 		}
-
-		return secretKey, nil
+		// we might recall that for signing we had to convert secretKey to a byte slice. Well, we have to do that here as well. So what we return in this inner anonymous function should not be the raw string key, but instead the key converted to a byte slice.
+		return []byte(secretKey), nil
 	})
 
 	if err != nil {
-		return errors.New("could not parse token.")
+		return errors.New("could not parse token")
 	}
 
 	tokenIsValid := parsedToken.Valid
 	
 	if !tokenIsValid {
-		return errors.New("invalid token!")
+		return errors.New("invalid token")
 	}
 
 	// Now if we got a valid token, we can use our parsed token and access the Claims field to get hold of the data that was stored in that token. So the email and userId field. We wanna check whether the claims we got for this token is of the jwt.MapClaims type, which it should be if it's our token because we used that MapClaims type for including our data into the token. As a result, we'll get back the claims.

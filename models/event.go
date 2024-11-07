@@ -39,7 +39,7 @@ func GetEventById(id int64) (*Event, error) {
 	// Use QueryRow method cause we know result will consist of only 1 row
 	row := db.DB.QueryRow(query, id)
 	var event Event
-	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID) 
+	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
 	if err != nil {
 		// Now we actually can't use nil as a zero value for event because the zero value for event is essentially an empty Struct (Event{}). But here, in order to be able to use nil, we will instead simply return a pointer to event because the null value for a pointer is nil. So if there is no address available because we have no event in this case, and therefore we can then return nil and the error.
 		return nil, err

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pratyushvid3105/Go-Rest-API/models"
+	"github.com/pratyushvid3105/Go-Rest-API/utils"
 )
 
 func getEvent(context *gin.Context){
@@ -34,41 +35,46 @@ func getEvents(context *gin.Context){
 func createEvent(context *gin.Context){
 	token := context.Request.Header.Get(("Authorization"))
 
-	if token != "" {
+	if token == "" {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Not authorized."})
 		return
 	}
 
-	var event models.Event
-	err := context.ShouldBindJSON(&event)
+	err := utils.VerifyToken(token)
 
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data", "error": err})
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized", "error": err.Error()})
 		return
 	}
 
-	event.ID = 1
+	var event models.Event
+	err = context.ShouldBindJSON(&event)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data", "error": err.Error()})
+		return
+	}
+
 	event.UserID = 1
 
 	err = event.Save()
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create events. Try again later.", "error": err})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create events. Try again later.", "error": err.Error()})
 		return
 	}
-
 	context.JSON(http.StatusCreated, gin.H{"message": "event created"})
 }
 
 func updateEvent(context *gin.Context){
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id. Try again later.", "error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id. Try again later.", "error": err.Error()})
 		return
 	}
 	_, err = models.GetEventById(eventId)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err.Error()})
 		return
 	}
 
@@ -76,7 +82,7 @@ func updateEvent(context *gin.Context){
 	err = context.ShouldBindJSON(&updatedEvent)
 
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data", "error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data", "error": err.Error()})
 		return
 	}
 	updatedEvent.ID = eventId
@@ -84,7 +90,7 @@ func updateEvent(context *gin.Context){
 	err = updatedEvent.Update()
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err.Error()})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": "event updated successfully"})
@@ -93,19 +99,19 @@ func updateEvent(context *gin.Context){
 func deleteEvent(context *gin.Context){
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id. Try again later.", "error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id. Try again later.", "error": err.Error()})
 		return
 	}
 	var event *models.Event
 	event, err = models.GetEventById(eventId)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later.", "error": err.Error()})
 		return
 	}
 
 	err = event.Delete()
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete event. Try again later.", "error": err})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete event. Try again later.", "error": err.Error()})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": "event deleted successfully"})
