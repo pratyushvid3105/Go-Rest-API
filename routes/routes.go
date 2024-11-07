@@ -10,5 +10,6 @@ func RegisterRoutes(server *gin.Engine){
 	server.PUT("/events/:id", updateEvent)
 	server.DELETE("/events/:id", deleteEvent)
 	server.POST("/signup", signup)
+	server.GET("/users", getUsers)
 	// So that's how we now register routes in this function. And since we're always operating on exactly the same server value, since we're using a pointer here, we don't have to return anything here or do anything like that. Instead we are manipulating the original server when this function (RegisterRoutes) here is executed.
 }

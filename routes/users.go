@@ -25,3 +25,12 @@ func signup(context *gin.Context){
 
 	context.JSON(http.StatusCreated, gin.H{"message": "user created successfully!"})
 }
+
+func getUsers(context *gin.Context){
+	users, err := models.GetAllUsers()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch users. Try again later.", "error": err})
+		return
+	}
+	context.JSON(http.StatusOK, users)
+}
