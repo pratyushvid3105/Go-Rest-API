@@ -11,7 +11,7 @@ type User struct{
 	Password string `binding:"required"`
 }
 
-func (u User) Save() error{
+func (u *User) Save() error{
 	// the password that is stored in the database should not be the plain password the user entered. Instead, it should be hashed, so converted to a different value in a way that can't be reversed, so that we can't get the original password from the hashed value
 	query := "INSERT INTO users(email, password) VALUES(?, ?)"
 

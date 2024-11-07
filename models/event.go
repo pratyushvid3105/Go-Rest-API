@@ -15,7 +15,7 @@ type Event struct {
 	UserID int64
 }
 
-func (e Event) Save() error{
+func (e *Event) Save() error{
 	// we want to use the actual data that we're getting from the request instead of hard coding something here and to inject that received data in a safe way into this query which is not vulnerable to SQL injection attacks, we should add a couple of question marks here. One for every column into which a value should be inserted. So five question marks in total here because that's a special syntax that is supported by these SQL Packages that gives us a SQL injection safe way of inserting values into this query
 	query := `
 	INSERT INTO events(name, description, location, dateTime, userId)
