@@ -1,12 +1,17 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/pratyushvid3105/Go-Rest-API/middlewares"
+)
 
 // Here, we want to get our server, we want to get a pointer to the server to be precise, so at the gin.Engine like this. Because we can then use this server to register those routes just as we did it in the main.go file with server.GET and server.POST and so on.
 func RegisterRoutes(server *gin.Engine){
 	server.GET("/events/:id", getEvent)
 	server.GET("/events", getEvents) // GET, POST, PUT, PATCH, DELETE
-	server.POST("/events", createEvent)
+
+	// The first argument after the path, before createEvent, we can use the middlewares package And then refer to that Authenticate function like this because with Gin, we can register multiple request handlers and they will be executed from left to right.
+	server.POST("/events", middlewares.Authenticate, createEvent)
 	server.PUT("/events/:id", updateEvent)
 	server.DELETE("/events/:id", deleteEvent)
 	server.POST("/signup", signup)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pratyushvid3105/Go-Rest-API/models"
-	"github.com/pratyushvid3105/Go-Rest-API/utils"
 )
 
 func getEvent(context *gin.Context){
@@ -33,28 +32,16 @@ func getEvents(context *gin.Context){
 }
 
 func createEvent(context *gin.Context){
-	token := context.Request.Header.Get(("Authorization"))
-
-	if token == "" {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "Not authorized."})
-		return
-	}
-
-	userId, err := utils.VerifyToken(token)
-
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized", "error": err.Error()})
-		return
-	}
-
 	var event models.Event
-	err = context.ShouldBindJSON(&event)
+	err := context.ShouldBindJSON(&event)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data", "error": err.Error()})
 		return
 	}
-	
+
+	// We also want to retrieve that userId from the context. We can do that by using a Get method, to be precise, the specific GetInt64 method, which will automatically give us the value converted to the right type. Now, here we should then, of course, use the same key as we used for storing it. So the same key you used here with the Set method, that's what we use here for getting it. And as a result, we'll get that userId and hence, it will be available again.
+	userId := context.GetInt64("userId")
 	event.UserID = userId
 
 	err = event.Save()
