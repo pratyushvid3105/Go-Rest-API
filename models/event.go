@@ -102,7 +102,7 @@ func (event Event) Delete() error{
 	if err != nil {
 		return err
 	}
-	
+
 	defer statement.Close()
 
 	_, err = statement.Exec(event.ID)
@@ -110,7 +110,7 @@ func (event Event) Delete() error{
 }
 
 func (e Event) Register(userId int64) error{
-	query := "INSERT INTO events(eventId, userId) VALUES(?, ?)"
+	query := "INSERT INTO registrations(eventId, userId) VALUES(?, ?)"
 
 	_, err := db.DB.Exec(query, e.ID, userId)
 	if err != nil {

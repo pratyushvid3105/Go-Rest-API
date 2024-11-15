@@ -22,8 +22,8 @@ func RegisterRoutes(server *gin.Engine){
 	authenticated.DELETE("/events/:id", deleteEvent)
 
 	// We will add more routes that belong to this authenticated group, because both registering and canceling should only be possible for locked in users.
-	authenticated.POST("/events/:id/register", createEvent)
-	authenticated.POST("/events/:id/register", createEvent)
+	authenticated.POST("/events/:id/register", registerForEvent)
+	authenticated.DELETE("/events/:id/register", cancelRegistration)
 
 	server.POST("/signup", signup)
 	server.POST("/login", login)
