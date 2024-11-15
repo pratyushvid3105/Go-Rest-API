@@ -28,8 +28,7 @@ func (e *Event) Save() error{
 		return err
 	}
 	// We can use this result to call LastInsertId to get the id of the event that was inserted because remember that we actually configured events table such that the ID is set automatically and we can get this automatically generated ID with help of this LastInsertId function here. So as a result we get back the id or an error if this somehow fails or if no id was found and I want to use that id to set it on my event. So I'll set the event ID to id. 
-	var id int64
-	id, err = result.LastInsertId()
+	id, err := result.LastInsertId()
 	e.ID = id
 	return err
 }

@@ -23,7 +23,7 @@ func GenerateToken(email string, userId int64) (string, error) {
 	return token.SignedString([]byte(secretKey))
 }
 
-func VerifyToken(token string) error {
+func VerifyToken(token string) (int64, error) {
 	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 
@@ -35,23 +35,24 @@ func VerifyToken(token string) error {
 	})
 
 	if err != nil {
-		return errors.New("could not parse token")
+		return 0, errors.New("could not parse token")
 	}
 
 	tokenIsValid := parsedToken.Valid
 	
 	if !tokenIsValid {
-		return errors.New("invalid token")
+		return 0, errors.New("invalid token")
 	}
 
 	// Now if we got a valid token, we can use our parsed token and access the Claims field to get hold of the data that was stored in that token. So the email and userId field. We wanna check whether the claims we got for this token is of the jwt.MapClaims type, which it should be if it's our token because we used that MapClaims type for including our data into the token. As a result, we'll get back the claims.
-	// claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 
-	// if !ok {
-	// 	return errors.New("invalid token claims.")
-	// }
+	if !ok {
+		return 0, errors.New("invalid token claims")
+	}
 
 	// email := claims["email"].(string)
-	// userId := claims["userId"].(int64)
-	return nil
+	// the way this claim is stored and then retrieved later, the userId isn't stored as the same value type (int64), but instead as a float 64. And hence what we should do now is convert that to an int64.
+	userId := int64(claims["userId"].(float64))
+	return userId, nil
 }
