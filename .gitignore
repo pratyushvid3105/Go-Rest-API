@@ -5,7 +5,7 @@ The `.gitignore` file is used to specify files and directories that Git should i
 
 ```plaintext
 # Binaries for programs and plugins
-*.exe
+..exe
 *.dll
 *.so
 *.dylib
@@ -30,3 +30,7 @@ vendor/
 # IDE/editor config files
 .idea/
 .vscode/
+
+# http or db files
+*.http
+*.db
