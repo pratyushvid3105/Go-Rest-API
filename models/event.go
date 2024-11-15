@@ -102,11 +102,23 @@ func (event Event) Delete() error{
 	if err != nil {
 		return err
 	}
+	
 	defer statement.Close()
 
 	_, err = statement.Exec(event.ID)
 	return err
 }
+
+func (e Event) Register(userId int64) error{
+	query := "INSERT INTO events(eventId, userId) VALUES(?, ?)"
+
+	_, err := db.DB.Exec(query, e.ID, userId)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 /* 
 Preparing Statements vs Directly Executing Queries (Prepare() vs Exec()/Query())
 We started sending SQL commands to the SQLite database.
