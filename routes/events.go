@@ -31,15 +31,6 @@ func getEvents(context *gin.Context){
 	context.JSON(http.StatusOK, events)
 }
 
-func getRegistrations(context *gin.Context){
-	registrations, err := models.GetAllRegistrations()
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch registrations. Try again later.", "error": err.Error()})
-		return
-	}
-	context.JSON(http.StatusOK, registrations)
-}
-
 func createEvent(context *gin.Context){
 	var event models.Event
 	err := context.ShouldBindJSON(&event)
@@ -49,7 +40,6 @@ func createEvent(context *gin.Context){
 		return
 	}
 
-	// We also want to retrieve that userId from the context. We can do that by using a Get method, to be precise, the specific GetInt64 method, which will automatically give us the value converted to the right type. Now, here we should then, of course, use the same key as we used for storing it. So the same key you used here with the Set method, that's what we use here for getting it. And as a result, we'll get that userId and hence, it will be available again.
 	userId := context.GetInt64("userId")
 	event.UserID = userId
 
@@ -69,7 +59,6 @@ func updateEvent(context *gin.Context){
 		return
 	}
 
-	// Only users who created an event should be able to update and delete it. Compare the stored event UserID to the user ID that was extracted from the token.
 	userId := context.GetInt64("userId")
 	event, err := models.GetEventById(eventId)
 
