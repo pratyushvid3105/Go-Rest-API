@@ -15,6 +15,12 @@ type Event struct {
 	UserID int64
 }
 
+type Registration struct {
+	ID int64
+	EventID int64 `binding:"required"`
+	UserID int64 `binding:"required"`
+}
+
 func (e *Event) Save() error{
 	// we want to use the actual data that we're getting from the request instead of hard coding something here and to inject that received data in a safe way into this query which is not vulnerable to SQL injection attacks, we should add a couple of question marks here. One for every column into which a value should be inserted. So five question marks in total here because that's a special syntax that is supported by these SQL Packages that gives us a SQL injection safe way of inserting values into this query
 	query := `
@@ -75,6 +81,31 @@ func GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
+func GetAllRegistrations() ([]Registration, error) {
+	query := "SELECT * FROM registrations"
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var registrations []Registration
+
+	for rows.Next() {
+		var registration Registration
+		// the Scan method, which now reads the content of the row we're currently processing and Scan then works a little bit like the FMT Package Scan method where you pass a pointer to Scan so that it's populated with the data from the row, though you don't just pass one pointer, but a bunch of pointers, one for every column that can be found in the row, in the order in which the columns were defined.
+		// So here for this event, we wanna start by populating the ID. So, we pass that ID to Scan, however not the raw value event.ID, but instead a pointer to that. So a pointer to that ID field in that event Struct (event.ID). And we then do this for all those fields.
+		err := rows.Scan(&registration.ID, &registration.EventID, &registration.UserID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		registrations = append(registrations, registration)
+	}
+	return registrations, nil
+}
+
 func (event Event) Update() error {
 	query := `
 	UPDATE events 
@@ -119,6 +150,15 @@ func (e Event) Register(userId int64) error{
 	return err
 }
 
+func (e Event) CancelRegistration(userId int64) error{
+	query := "DELETE FROM registrations WHERE eventId = ? AND userId = ?"
+
+	_, err := db.DB.Exec(query, e.ID, userId)
+	if err != nil {
+		return err
+	}
+	return err
+}
 /* 
 Preparing Statements vs Directly Executing Queries (Prepare() vs Exec()/Query())
 We started sending SQL commands to the SQLite database.

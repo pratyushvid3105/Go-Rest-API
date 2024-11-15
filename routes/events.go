@@ -25,10 +25,19 @@ func getEvent(context *gin.Context){
 func getEvents(context *gin.Context){
 	events, err := models.GetAllEvents()
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch events. Try again later.", "error": err})
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch events. Try again later.", "error": err.Error()})
 		return
 	}
 	context.JSON(http.StatusOK, events)
+}
+
+func getRegistrations(context *gin.Context){
+	registrations, err := models.GetAllRegistrations()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "could not fetch registrations. Try again later.", "error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, registrations)
 }
 
 func createEvent(context *gin.Context){

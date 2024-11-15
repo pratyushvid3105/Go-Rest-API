@@ -10,6 +10,7 @@ func RegisterRoutes(server *gin.Engine){
 	server.GET("/events/:id", getEvent)
 	server.GET("/events", getEvents) // GET, POST, PUT, PATCH, DELETE
 	server.GET("/users", getUsers)
+	server.GET("/registrations", getRegistrations)
 
 	// We'll use authentication on multiple routes, also on PUT and DELETE, for example, there is an easier approach we can use. We can use that server here and call the Group method to create a group of routes. Now, Group then wants a path with which all grouped routes will start and here we'll just use "/" because that's the one thing all grouped routes will have in common. Then as a result, we'll get back a router group, which we should store in a variable (here "authenticated"). And now we can use that router group here to add routes to it.
 	authenticated := server.Group("/")
